@@ -27,6 +27,13 @@ class VentanaGlade (Gtk.Window):
         #el objSelection podemos seleccionarlo y leo lo que hay si es directorio leo lo que hay adentro.
         objSeleccion.connect("changed", self.on_selection_changed)
 
+        #barra desplazadora para la ventana
+        barraDesplazadora = Gtk.ScrolledWindow()
+        #Never = nunca se muestra la barra, Automatico = aparece cuando se necesite, y always
+        barraDesplazadora.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        barraDesplazadora.add(trvVista)
+
         tvcColumna = Gtk.TreeViewColumn()
         trvVista.append_column(tvcColumna)
         celda = Gtk.CellRendererPixbuf()
@@ -38,9 +45,9 @@ class VentanaGlade (Gtk.Window):
         celda = Gtk.CellRendererText()
         tvcColumna2.pack_start(celda, True)
         tvcColumna2.add_attribute(celda,'text', 1)
-        self.explorarDirectorio('/home/dam/AccesoDatos', None, modelo)
+        self.explorarDirectorio('/home/dam/', None, modelo)
 
-        cajaV.pack_start(trvVista,True,True,10)
+        cajaV.pack_start(barraDesplazadora,True,True,10)
 
         self.add(cajaV)
         self.connect("delete-event", Gtk.main_quit)
@@ -64,19 +71,17 @@ class VentanaGlade (Gtk.Window):
         #objSelection tiene un metodo que da referencia al modelo y asu fila referenciada get_selected()
         modelo, fila = objSeleccion.get_selected()
         print(modelo[fila][0], modelo[fila][1])
-        """if modelo [fila][0] == "folder":
-            ruta = self.obtenerRuta(modelo, fila,"")
-        print(ruta)
-        """
-        #self.explorarDirectorio(ruta + modelo [fila][1], puntero, modelo)
 
-    def obtenerRuta (self,modelo, fila, ruta ):
+        if modelo [fila][0] == "folder":
+            ruta = self.obtenerRuta(modelo, fila)
+            self.explorarDirectorio("/home/dam/" + ruta, fila, modelo)
+
+    def obtenerRuta (self,modelo, fila):
         punteroPadre = modelo.iter_parent(fila)
         if punteroPadre is None:
-            return fila.row()[1] + '/' + ruta
+            return modelo [fila][1]
         else:
-            ruta = ruta + '/' + fila [1]
-            self.obtenerRuta(modelo, fila, ruta)
+            return self.obtenerRuta(modelo,punteroPadre) + '/' + modelo[fila][1]
 
 if __name__ == "__main__":
     VentanaGlade()
